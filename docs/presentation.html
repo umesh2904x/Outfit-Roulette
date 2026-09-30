@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f7f4" />
+    <title>Outfit Roulette | Project Presentation</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #152b29;
+        --muted: #536763;
+        --paper: #f5f7f4;
+        --green: #12695f;
+        --mint: #d9eee7;
+        --coral: #d77755;
+        --line: #cad7d1;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: "Segoe UI", sans-serif;
+      }
+      .frame {
+        min-height: 100svh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        padding: 18px clamp(16px, 4vw, 56px) 14px;
+      }
+      .topline, .controls, .control-group { display: flex; align-items: center; }
+      .topline { justify-content: space-between; gap: 16px; }
+      .wordmark { font-weight: 800; color: var(--green); }
+      .counter { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+      .deck { width: min(1180px, 100%); margin: 0 auto; display: grid; align-items: center; }
+      .slide {
+        display: none;
+        min-height: min(680px, calc(100svh - 112px));
+        align-content: center;
+        gap: clamp(18px, 3vh, 32px);
+        padding: clamp(12px, 3vw, 34px) 0;
+      }
+      .slide.active { display: grid; animation: enter 340ms ease both; }
+      @keyframes enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+      .eyebrow { margin: 0; color: var(--green); font-size: 12px; font-weight: 800; text-transform: uppercase; }
+      h1, h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-weight: 500; line-height: 1.06; }
+      h1 { max-width: 900px; font-size: clamp(48px, 9vw, 108px); }
+      h2 { font-size: clamp(34px, 5.5vw, 64px); }
+      p { max-width: 70ch; margin: 0; color: var(--muted); font-size: clamp(16px, 1.6vw, 20px); line-height: 1.55; }
+      .cover { position: relative; isolation: isolate; }
+      .cover::before { content: ""; position: absolute; z-index: -1; width: min(37vw, 420px); aspect-ratio: 1; right: 4%; top: 4%; border: 1px solid #a9c9bc; border-radius: 50%; box-shadow: 0 0 0 36px rgba(217, 238, 231, .6), 0 0 0 72px rgba(217, 238, 231, .3); }
+      .cover-title span { color: var(--coral); }
+      .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+      .meta span, .tag { border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; color: var(--muted); font-size: 13px; }
+      .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(20px, 5vw, 66px); }
+      .visual { width: 100%; max-height: 58vh; object-fit: contain; object-position: top; border: 1px solid var(--line); background: white; box-shadow: 0 18px 48px -32px rgba(21, 43, 41, .5); }
+      .stack { display: grid; gap: 16px; }
+      .flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: stretch; gap: 12px; }
+      .flow-item { min-height: 148px; display: grid; align-content: space-between; gap: 16px; padding: 18px; border-top: 3px solid var(--green); background: white; }
+      .flow-item b { font-family: Georgia, "Times New Roman", serif; font-size: 26px; font-weight: 500; }
+      .flow-item span { color: var(--muted); font-size: 14px; line-height: 1.45; }
+      .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      .metric { padding: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.76); }
+      .metric strong { display: block; color: var(--green); font-size: 28px; }
+      .metric span { color: var(--muted); font-size: 13px; }
+      .status { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 22px; }
+      .status div { padding: 13px 0; border-bottom: 1px solid var(--line); }
+      .status strong { display: block; margin-bottom: 4px; }
+      .status span { color: var(--muted); font-size: 14px; }
+      a { color: var(--green); text-underline-offset: 3px; }
+      .controls { justify-content: space-between; border-top: 1px solid var(--line); padding-top: 12px; }
+      .control-group { gap: 8px; }
+      button { min-width: 42px; min-height: 42px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: white; font: inherit; cursor: pointer; }
+      button:hover { border-color: var(--green); color: var(--green); }
+      button:focus-visible { outline: 3px solid var(--coral); outline-offset: 2px; }
+      button:disabled { opacity: .45; cursor: not-allowed; }
+      .progress { height: 3px; width: 100%; margin-top: 10px; background: #e2e8e4; }
+      .progress span { display: block; height: 100%; width: 12.5%; background: var(--green); transition: width .2s ease; }
+      @media (max-width: 700px) {
+        .split, .flow { grid-template-columns: 1fr; }
+        .slide { min-height: auto; padding: 32px 0; }
+        .visual { max-height: 45vh; }
+        .flow-item { min-height: 92px; }
+        .metrics, .status { grid-template-columns: 1fr; }
+        .cover::before { width: 42vw; right: 2%; top: 18%; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <header class="topline"><span class="wordmark">OUTFIT ROULETTE</span><span class="counter" id="counter" aria-live="polite">01 / 08</span></header>
+      <main class="deck" aria-label="Project presentation">
+        <section class="slide active cover" aria-labelledby="slide1-title">
+          <p class="eyebrow">DevOps mini project · 2026</p>
+          <h1 class="cover-title" id="slide1-title">Outfits for your day.<br /><span>From your closet.</span></h1>
+          <p>A schedule-aware styling assistant built with a secure Node.js proxy, automated CI, Docker, and an observable service stack.</p>
+          <div class="meta"><span>HTML · CSS · JavaScript</span><span>Node.js 22</span><span>Groq AI</span></div>
+        </section>
+        <section class="slide" aria-labelledby="slide2-title">
+          <p class="eyebrow">01 · Product</p>
+          <div class="split">
+            <div class="stack"><h2 id="slide2-title">Getting dressed is a daily decision.</h2><p>People have plans, weather, personal style and an existing wardrobe. The app turns those constraints into three ranked looks instead of inventing a shopping list.</p><div class="metrics"><div class="metric"><strong>3</strong><span>ranked options</span></div><div class="metric"><strong>4</strong><span>look components</span></div><div class="metric"><strong>1</strong><span>schedule-driven prompt</span></div></div></div>
+            <img class="visual" src="screenshots/home.png" alt="Outfit Roulette home page" />
+          </div>
+        </section>
+        <section class="slide" aria-labelledby="slide3-title">
+          <p class="eyebrow">02 · User flow</p>
+          <div class="split">
+            <div class="stack"><h2 id="slide3-title">A personal brief, then a useful answer.</h2><p>Choose a styling direction, describe the day, optionally list clothes or scan a photo, then save a look worth wearing again.</p><div class="meta"><span>Women’s</span><span>Men’s</span><span>Neutral</span><span>Mix it up</span></div></div>
+            <img class="visual" src="screenshots/outfit-form.png" alt="Outfit planning form" />
+          </div>
+        </section>
+        <section class="slide" aria-labelledby="slide4-title">
+          <p class="eyebrow">03 · Architecture</p>
+          <h2 id="slide4-title">Small stack. Clear boundaries.</h2>
+          <p>The browser stores saved looks. The Node server keeps the Groq key private and proxies only approved model requests. Docker packages the same server for CI and hosting.</p>
+          <div class="flow"><div class="flow-item"><b>01 · Browser</b><span>HTML/CSS/JS<br />localStorage + IndexedDB</span></div><div class="flow-item"><b>02 · Node API</b><span>Health, validation, bounded request body, timeout, secret handling</span></div><div class="flow-item"><b>03 · Groq</b><span>GPT outfit suggestions<br />Qwen wardrobe-photo scan</span></div><div class="flow-item"><b>04 · Container</b><span>Node 22 Alpine<br />non-root user + health check</span></div></div>
+        </section>
+        <section class="slide" aria-labelledby="slide5-title">
+          <p class="eyebrow">04 · CI and container</p>
+          <div class="split">
+            <div class="stack"><h2 id="slide5-title">Every push gets checked.</h2><p>GitHub Actions checks syntax, runs API integration tests with a mocked Groq upstream, builds the image, starts a container, and checks both health and homepage HTTP responses.</p><a href="https://github.com/umesh2904x/Outfit-Roulette/actions/runs/36758450188">View passing CI + Docker smoke run →</a></div>
+            <div class="stack"><div class="metric"><strong>7 / 7</strong><span>Node.js tests pass</span></div><div class="metric"><strong>HTTP 200</strong><span>container health and app page</span></div><div class="metric"><strong>0</strong><span>Groq secrets in source</span></div></div>
+          </div>
+        </section>
+        <section class="slide" aria-labelledby="slide6-title">
+          <p class="eyebrow">05 · Monitoring</p>
+          <h2 id="slide6-title">Watch the service, not just the page.</h2>
+          <p>Compose provisions Prometheus and Grafana locally. The dashboard tracks request rate, p95 latency, 5xx rate, AI configuration and Node.js RSS memory.</p>
+          <div class="flow"><div class="flow-item"><b>Prometheus</b><span>15-second scrape from `/metrics`</span></div><div class="flow-item"><b>Grafana</b><span>Provisioned Prometheus datasource</span></div><div class="flow-item"><b>Dashboard</b><span>Five service-health panels</span></div><div class="flow-item"><b>Local-only</b><span>Ports bind to 127.0.0.1</span></div></div>
+          <p><strong>Status:</strong> Configuration and dashboard are in the repo; runtime dashboard still needs Docker Desktop to be launched.</p>
+        </section>
+        <section class="slide" aria-labelledby="slide7-title">
+          <p class="eyebrow">06 · Deployment</p>
+          <div class="split">
+            <div class="stack"><h2 id="slide7-title">Ready to deploy. Secrets stay private.</h2><p>Render Blueprint config and a GitHub deploy-hook job are included. After creating the Render service and setting a freshly rotated Groq key, add the deploy hook as a GitHub Actions secret.</p><div class="meta"><span>RENDER_DEPLOY_HOOK</span><span>DOCKERHUB_TOKEN (optional)</span></div></div>
+            <div class="status"><div><strong>Local app</strong><span>Running at 127.0.0.1:4173</span></div><div><strong>CI container</strong><span>Image and smoke test passed</span></div><div><strong>Public deployment</strong><span>Not deployed yet; hosting secret required</span></div><div><strong>Docker Hub</strong><span>Optional publish; token required</span></div></div>
+          </div>
+        </section>
+        <section class="slide" aria-labelledby="slide8-title">
+          <p class="eyebrow">07 · Wrap-up</p>
+          <h2 id="slide8-title">The pipeline is prepared.<br />Three launch steps remain.</h2>
+          <div class="status"><div><strong>1 · Rotate API key</strong><span>Use a new Groq key; configure it in Render secrets.</span></div><div><strong>2 · Launch monitoring</strong><span>Run Docker Compose; confirm Grafana panels populate.</span></div><div><strong>3 · Deploy and present</strong><span>Set Render deploy hook; rehearse the end-to-end demo.</span></div><div><strong>Evidence</strong><span>Source, tests, screenshots and run links are in the repository.</span></div></div>
+          <p><a href="https://github.com/umesh2904x/Outfit-Roulette">Open the GitHub repository →</a></p>
+        </section>
+      </main>
+      <footer>
+        <div class="controls"><span class="counter">Use ← → keys to navigate</span><div class="control-group"><button id="previous" type="button" aria-label="Previous slide">←</button><button id="next" type="button" aria-label="Next slide">→</button></div></div>
+        <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+      </footer>
+    </div>
+    <script>
+      const slides = [...document.querySelectorAll(".slide")];
+      const counter = document.querySelector("#counter");
+      const progress = document.querySelector("#progress");
+      let active = 0;
+      function showSlide(index) {
+        active = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, position) => {
+          const visible = position === active;
+          slide.classList.toggle("active", visible);
+          slide.setAttribute("aria-hidden", String(!visible));
+        });
+        counter.textContent = `${String(active + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+        progress.style.width = `${((active + 1) / slides.length) * 100}%`;
+        document.querySelector("#previous").disabled = active === 0;
+        document.querySelector("#next").disabled = active === slides.length - 1;
+      }
+      document.querySelector("#previous").addEventListener("click", () => showSlide(active - 1));
+      document.querySelector("#next").addEventListener("click", () => showSlide(active + 1));
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight" || event.key === "PageDown") showSlide(active + 1);
+        if (event.key === "ArrowLeft" || event.key === "PageUp") showSlide(active - 1);
+      });
+      showSlide(0);
+    </script>
+  </body>
+</html>

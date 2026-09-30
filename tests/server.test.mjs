@@ -48,6 +48,23 @@ test("reports whether an AI key is configured without exposing it", async () => 
   });
 });
 
+test("exports bounded Prometheus HTTP metrics and process gauges", async () => {
+  await withServer({ apiKey: "test-secret" }, async (baseUrl) => {
+    await fetch(`${baseUrl}/api/health`);
+    await fetch(`${baseUrl}/missing`);
+    const response = await fetch(`${baseUrl}/metrics`);
+    const metrics = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("content-type"), /text\/plain; version=0\.0\.4/);
+    assert.match(metrics, /outfit_roulette_http_requests_total\{method="GET",route="\/api\/health",status="200"\} 1/);
+    assert.match(metrics, /outfit_roulette_http_request_duration_seconds_bucket\{method="GET",route="\/api\/health",status="200",le="\+Inf"\} 1/);
+    assert.match(metrics, /outfit_roulette_http_requests_total\{method="GET",route="\/other",status="404"\} 1/);
+    assert.match(metrics, /outfit_roulette_ai_configured 1/);
+    assert.match(metrics, /outfit_roulette_process_resident_memory_bytes/);
+  });
+});
+
 test("returns a helpful response when AI is not configured", async () => {
   await withServer({ apiKey: "" }, async (baseUrl) => {
     const response = await fetch(`${baseUrl}/api/chat/completions`, {

@@ -28,6 +28,9 @@ jobs:
       - name: Run backend tests
         run: npm test
 
+      - name: Validate monitoring stack configuration
+        run: docker compose --env-file .env.example config --quiet
+
       - name: Build Docker image
         run: docker build --tag outfit-roulette:ci .
 
@@ -101,3 +104,33 @@ jobs:
       - name: Explain skipped publishing
         if: steps.dockerhub.outputs.enabled != 'true'
         run: echo 'Docker publishing skipped. Add the DOCKERHUB_TOKEN GitHub Actions secret to enable it.' >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-render:
+    name: Deploy to Render
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Render deploy hook
+        id: render
+        shell: bash
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [[ -n "$RENDER_DEPLOY_HOOK" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger Render deployment
+        if: steps.render.outputs.enabled == 'true'
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          curl --fail --silent --show-error --request POST "$RENDER_DEPLOY_HOOK" --output /dev/null
+          echo 'Render deployment triggered.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Explain skipped deployment
+        if: steps.render.outputs.enabled != 'true'
+        run: echo 'Render deployment skipped. Create the service from render.yaml, configure GROQ_API_KEY in Render, then add its deploy hook as the RENDER_DEPLOY_HOOK Actions secret.' >> "$GITHUB_STEP_SUMMARY"
