@@ -4,8 +4,7 @@
 
 Plan outfits around your day and the clothes you already own. Outfit Roulette can generate three ranked suggestions, read a wardrobe photo, and save favorite looks in your browser.
 
-See the [project report](docs/PROJECT_REPORT.md) for architecture, screenshots and delivery status. Open the [project presentation](docs/presentation.html) in a browser for the walkthrough.
-For a teacher-friendly requirement checklist with direct evidence links and remaining setup steps, see [docs/DELIVERABLES.md](docs/DELIVERABLES.md).
+Open the [project links](docs/PROJECT_LINKS.md) for the app, presentation, Docker status and main configuration. The [project report](docs/PROJECT_REPORT.md) has architecture and implementation details.
 
 ## Requirements
 
