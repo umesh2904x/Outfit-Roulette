@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+node_modules
+npm-debug.log*
+index.BACKUP.html
+tests
+.github
+README.md
+.gitignore

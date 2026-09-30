@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const apiUrl = "https://api.groq.com/openai/v1/chat/completions";
@@ -52,8 +52,8 @@ async function readJsonBody(request) {
   }
 }
 
-async function proxyCompletion(request, response) {
-  if (!process.env.GROQ_API_KEY) {
+async function proxyCompletion(request, response, { apiKey, fetchImpl }) {
+  if (!apiKey) {
     sendJson(response, 503, {
       error: { message: "AI is not configured yet. Add GROQ_API_KEY to .env and restart the app." },
     });
@@ -80,11 +80,11 @@ async function proxyCompletion(request, response) {
   });
 
   try {
-    const upstream = await fetch(apiUrl, {
+    const upstream = await fetchImpl(apiUrl, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: body.model,
@@ -114,51 +114,61 @@ async function proxyCompletion(request, response) {
   }
 }
 
-await loadLocalEnv();
-const port = Number(process.env.PORT || 4173);
+export function createAppServer({ rootDir = root, apiKey = process.env.GROQ_API_KEY, fetchImpl = fetch } = {}) {
+  return createServer(async (request, response) => {
+    const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
 
-const server = createServer(async (request, response) => {
-  const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
-
-  if (pathname === "/api/health" && request.method === "GET") {
-    sendJson(response, 200, { ok: true, aiConfigured: Boolean(process.env.GROQ_API_KEY) });
-    return;
-  }
-
-  if (pathname === "/api/chat/completions" && request.method === "POST") {
-    await proxyCompletion(request, response);
-    return;
-  }
-
-  if ((pathname === "/" || pathname === "/index.html") && ["GET", "HEAD"].includes(request.method)) {
-    try {
-      const html = await readFile(join(root, "index.html"));
-      response.writeHead(200, {
-        "content-type": "text/html; charset=utf-8",
-        "cache-control": "no-store",
-        "x-content-type-options": "nosniff",
-        "referrer-policy": "no-referrer",
-      });
-      response.end(request.method === "HEAD" ? undefined : html);
-    } catch {
-      sendJson(response, 500, { error: { message: "Could not load the app page." } });
+    if (pathname === "/api/health" && request.method === "GET") {
+      sendJson(response, 200, { ok: true, aiConfigured: Boolean(apiKey) });
+      return;
     }
-    return;
-  }
 
-  sendJson(response, 404, { error: { message: "Not found." } });
-});
+    if (pathname === "/api/chat/completions" && request.method === "POST") {
+      await proxyCompletion(request, response, { apiKey, fetchImpl });
+      return;
+    }
 
-server.on("error", (error) => {
-  if (error.code === "EADDRINUSE") {
-    console.error(`Port ${port} is already in use. Stop the existing server or set a different PORT in .env.`);
-  } else {
-    console.error("The server could not start.", error);
-  }
-  process.exitCode = 1;
-});
+    if ((pathname === "/" || pathname === "/index.html") && ["GET", "HEAD"].includes(request.method)) {
+      try {
+        const html = await readFile(join(rootDir, "index.html"));
+        response.writeHead(200, {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "no-store",
+          "x-content-type-options": "nosniff",
+          "referrer-policy": "no-referrer",
+        });
+        response.end(request.method === "HEAD" ? undefined : html);
+      } catch {
+        sendJson(response, 500, { error: { message: "Could not load the app page." } });
+      }
+      return;
+    }
 
-server.listen(port, "127.0.0.1", () => {
-  console.log(`Outfit Roulette is running at http://127.0.0.1:${port}`);
-  if (!process.env.GROQ_API_KEY) console.log("AI is not configured; add GROQ_API_KEY to .env and restart.");
-});
+    sendJson(response, 404, { error: { message: "Not found." } });
+  });
+}
+
+async function startServer() {
+  await loadLocalEnv();
+  const port = Number(process.env.PORT || 4173);
+  const host = process.env.HOST || "127.0.0.1";
+  const server = createAppServer({ rootDir: root, apiKey: process.env.GROQ_API_KEY });
+
+  server.on("error", (error) => {
+    if (error.code === "EADDRINUSE") {
+      console.error(`Port ${port} is already in use. Stop the existing server or set a different PORT in .env.`);
+    } else {
+      console.error("The server could not start.", error);
+    }
+    process.exitCode = 1;
+  });
+
+  server.listen(port, host, () => {
+    console.log(`Outfit Roulette is running at http://${host}:${port}`);
+    if (!process.env.GROQ_API_KEY) console.log("AI is not configured; add GROQ_API_KEY to .env and restart.");
+  });
+}
+
+if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
+  await startServer();
+}

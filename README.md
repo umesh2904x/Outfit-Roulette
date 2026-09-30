@@ -23,6 +23,22 @@ npm start
 
 Open http://127.0.0.1:4173. Stop the server with `Ctrl+C` in its terminal. If that port is already occupied, stop the other server or change `PORT` in `.env` (for example, `PORT=4174`) and restart.
 
+## Run with Docker
+
+Requires Docker Desktop or another Docker Engine. Build the image from the project folder:
+
+```powershell
+docker build -t outfit-roulette .
+```
+
+Set `GROQ_API_KEY` in your shell or deployment environment, then run the container:
+
+```powershell
+docker run --rm -p 4173:4173 --env GROQ_API_KEY outfit-roulette
+```
+
+Open http://127.0.0.1:4173. The image runs as the unprivileged `node` user and includes a health check. Local `.env` files and backups are excluded from the Docker build context.
+
 ## Features
 
 - Schedule-aware outfit suggestions with optional Women's, Men's, neutral or mixed styling direction.
@@ -39,9 +55,20 @@ Open http://127.0.0.1:4173. Stop the server with `Ctrl+C` in its terminal. If th
 
 The backend keeps the Groq key out of browser code. Schedule and wardrobe-photo requests are sent to Groq; saved looks and form data stay in the browser.
 
+## Tests and CI
+
+Run the built-in Node.js tests and syntax check locally:
+
+```powershell
+npm test
+npm run check
+```
+
+GitHub Actions runs both checks and builds the Docker image on pushes to `main` and on pull requests. No API key or third-party test dependency is needed for CI.
+
 ## GitHub and deployment
 
-The `.gitignore` excludes `.env`, other local environment files, dependencies, logs and `index.BACKUP.html`. Upload the source files and `.env.example`, but never upload `.env` or an API key. The project is not uploaded by this setup.
+The `.gitignore` excludes `.env`, other local environment files, dependencies, logs and `index.BACKUP.html`; `.dockerignore` excludes secrets and backup files from image builds. Commit source files and `.env.example`, but never commit `.env` or an API key.
 
 GitHub Pages cannot run the Node API server. For a live AI-enabled site, deploy `server.mjs` and `index.html` to a Node-capable host and set `GROQ_API_KEY` in that host's environment settings. Set `PORT` there only if the host requires it.
 
