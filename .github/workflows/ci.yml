@@ -29,7 +29,10 @@ jobs:
         run: npm test
 
       - name: Validate monitoring stack configuration
-        run: docker compose --env-file .env.example config --quiet
+        env:
+          GROQ_API_KEY: ci-smoke-test
+          GRAFANA_PASSWORD: ci-grafana-test
+        run: docker compose config > /dev/null
 
       - name: Build Docker image
         run: docker build --tag outfit-roulette:ci .
