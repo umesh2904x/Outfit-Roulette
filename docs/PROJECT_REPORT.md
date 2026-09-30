@@ -66,7 +66,7 @@ npm test: 7 passed, 0 failed
 
 The seven tests cover static page/security headers, health state with and without a key, Prometheus metrics and process gauges, the helpful unconfigured-AI response, malformed JSON and unsupported models, a mocked authenticated Groq proxy response, and 404 handling.
 
-The earlier GitHub Actions run passed on commit `3e1fef94fd0af9c046e5e9827d7b24b9109bcfd2`: [CI run 36758450188](https://github.com/umesh2904x/Outfit-Roulette/actions/runs/36758450188). It verified syntax, six backend tests, Docker image build, and the running-container health/homepage smoke test. The monitoring/metrics additions require the next Actions run for CI verification; follow [current workflow runs](https://github.com/umesh2904x/Outfit-Roulette/actions). The container test is ephemeral and is not a public deployment.
+GitHub Actions passed on commit `f1813f1`: [CI run 36761305575](https://github.com/umesh2904x/Outfit-Roulette/actions/runs/36761305575). It verified syntax, all seven backend tests, Compose configuration, Docker image build, and the running-container health/homepage smoke test. Render deployment and Docker Hub publishing were skipped because their repository secrets are not configured. The container test is ephemeral and is not a public deployment.
 
 Docker Engine is not installed in the development environment, so Compose/Grafana could not be started locally. The dashboard and scrape configuration are present but still need a Docker-enabled runtime to show live metrics. Docker Hub publishing is optional and requires the `DOCKERHUB_TOKEN` repository secret; Render deployment requires the Render service, a rotated Groq key and the `RENDER_DEPLOY_HOOK` secret.
 
@@ -76,10 +76,10 @@ Docker Engine is not installed in the development environment, so Compose/Grafan
 | --- | --- |
 | Application source | Complete |
 | GitHub repository and commit history | Complete |
-| GitHub Actions CI | Workflow configured; latest run linked above |
+| GitHub Actions CI | Complete; passing run linked above |
 | Tests | Complete; seven local tests pass |
-| Dockerfile and image build | Complete; previously built in CI; current code awaits next CI run |
-| Running container evidence | Previous CI smoke passed; current code awaits next CI run; not a persistent deployment |
+| Dockerfile and image build | Complete; image build passed in CI |
+| Running container evidence | Complete for ephemeral CI smoke test; not a persistent deployment |
 | Prometheus/Grafana configuration and dashboard | Complete; live dashboard awaits Compose runtime |
 | Render deployment configuration | Complete; public URL awaits Render service and secrets |
 | HTML presentation | Complete; live presentation/demo not yet delivered |
