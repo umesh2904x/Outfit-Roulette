@@ -58,9 +58,9 @@ npm test: 6 passed, 0 failed
 
 The six tests cover static page/security headers, health state with and without a key, the helpful unconfigured-AI response, malformed JSON and unsupported models, a mocked authenticated Groq proxy response, and 404 handling.
 
-The existing GitHub Actions run passed on commit `6c64d461cf4b9eff7a3beae19511d38d04661a86`: [CI run 36757389750](https://github.com/umesh2904x/Outfit-Roulette/actions/runs/36757389750). That run predates the latest container smoke-test step. The workflow page shows the current run after this report commit: [GitHub Actions runs](https://github.com/umesh2904x/Outfit-Roulette/actions).
+The latest GitHub Actions run passed on commit `3e1fef94fd0af9c046e5e9827d7b24b9109bcfd2`: [CI run 36758450188](https://github.com/umesh2904x/Outfit-Roulette/actions/runs/36758450188). Its test/build job passed syntax checking, all six backend tests, the Docker image build, and the running-container health/homepage smoke test. The container ran ephemerally on the GitHub-hosted runner; this is not a public deployment.
 
-Docker Engine is not installed in the development environment, so a local image build/container run was not possible. The updated GitHub Actions workflow builds the image, starts it, checks `/api/health` and the homepage, and emits container logs. Its result is the Docker build/run evidence.
+Docker Engine is not installed in the development environment, so a local image build/container run was not possible. GitHub Actions provides the verified Docker build and ephemeral runtime evidence instead. Docker Hub publishing is optional and requires the `DOCKERHUB_TOKEN` repository secret; without it, the workflow intentionally skips pushing an image.
 
 ## Deliverable status
 
@@ -70,8 +70,8 @@ Docker Engine is not installed in the development environment, so a local image 
 | GitHub repository and commit history | Complete |
 | GitHub Actions CI | Complete; latest workflow run linked above |
 | Tests | Complete; six local tests pass |
-| Dockerfile and image build | Dockerfile complete; CI builds the image |
-| Running container evidence | CI smoke test configured; pending workflow run after this update |
+| Dockerfile and image build | Complete; image build passed in CI |
+| Running container evidence | Complete for CI smoke run; not a persistent deployment |
 | Public deployment | Deferred |
 | Prometheus/Grafana dashboard | Deferred |
 | Final presentation and live demo | Deferred |
