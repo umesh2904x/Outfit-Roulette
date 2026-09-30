@@ -1,6 +1,10 @@
 # Outfit Roulette
 
+[![CI](https://github.com/umesh2904x/Outfit-Roulette/actions/workflows/ci.yml/badge.svg)](https://github.com/umesh2904x/Outfit-Roulette/actions/workflows/ci.yml)
+
 Plan outfits around your day and the clothes you already own. Outfit Roulette can generate three ranked suggestions, read a wardrobe photo, and save favorite looks in your browser.
+
+See the [project report](docs/PROJECT_REPORT.md) for architecture, screenshots, verification evidence, and deferred deliverables.
 
 ## Requirements
 
@@ -64,11 +68,13 @@ npm test
 npm run check
 ```
 
-GitHub Actions runs both checks and builds the Docker image on pushes to `main` and on pull requests. No API key or third-party test dependency is needed for CI.
+GitHub Actions runs the checks, builds the Docker image, and starts a container for an HTTP smoke test on pushes to `main` and on pull requests. No Groq API key or third-party test dependency is needed for CI.
 
 ## GitHub and deployment
 
 The `.gitignore` excludes `.env`, other local environment files, dependencies, logs and `index.BACKUP.html`; `.dockerignore` excludes secrets and backup files from image builds. Commit source files and `.env.example`, but never commit `.env` or an API key.
+
+On pushes to `main`, CI also publishes `umesh290406/outfit-roulette:latest` and a commit-SHA tag when the repository has a `DOCKERHUB_TOKEN` Actions secret. Create a Docker Hub access token and add it under **Settings → Secrets and variables → Actions**. The workflow uses the public username `umesh290406`; never put the token in a file or commit.
 
 GitHub Pages cannot run the Node API server. For a live AI-enabled site, deploy `server.mjs` and `index.html` to a Node-capable host and set `GROQ_API_KEY` in that host's environment settings. Set `PORT` there only if the host requires it.
 
